@@ -1,0 +1,283 @@
+<template>
+  <div class="container" onswipe="touchMove">
+    <div class="container">
+      <div class="resultBox">
+        <text class="resultShow">{{ resultShow }}</text>
+      </div>
+      <div class="keyBoardBox">
+        <text class="inputCommon input1" onclick="handleClick('AC')">AC</text>
+        <text class="inputCommon input1" onclick="handleClick('D')">D</text>
+        <text
+          class="inputCommon input1"
+          onclick="handleClick(keyBoardNum[19])"
+          >{{ keyBoardNum[19] }}</text
+        >
+        <text
+          class="inputCommon input1"
+          onclick="handleClick(keyBoardNum[15])"
+          >{{ keyBoardNum[15] }}</text
+        >
+      </div>
+      <div class="keyBoardBox">
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[1])">{{
+          keyBoardNum[1]
+        }}</text>
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[2])">{{
+          keyBoardNum[2]
+        }}</text>
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[3])">{{
+          keyBoardNum[3]
+        }}</text>
+        <text
+          class="inputCommon input1"
+          onclick="handleClick(keyBoardNum[10])"
+          >{{ keyBoardNum[10] }}</text
+        >
+      </div>
+      <div class="keyBoardBox">
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[6])">{{
+          keyBoardNum[6]
+        }}</text>
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[7])">{{
+          keyBoardNum[7]
+        }}</text>
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[8])">{{
+          keyBoardNum[8]
+        }}</text>
+        <text
+          class="inputCommon input1"
+          onclick="handleClick(keyBoardNum[14])"
+          >{{ keyBoardNum[14] }}</text
+        >
+      </div>
+      <div class="keyBoardBox">
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[11])">{{
+          keyBoardNum[11]
+        }}</text>
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[12])">{{
+          keyBoardNum[12]
+        }}</text>
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[13])">{{
+          keyBoardNum[13]
+        }}</text>
+        <text
+          class="inputCommon input1"
+          onclick="handleClick(keyBoardNum[9])"
+          >{{ keyBoardNum[9] }}</text
+        >
+      </div>
+      <div class="keyBoardBox">
+        <text onclick="exchange" class="inputCommon input1" value="切换"></text>
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[16])">{{
+          keyBoardNum[16]
+        }}</text>
+        <text class="inputCommon" onclick="handleClick(keyBoardNum[17])">{{
+          keyBoardNum[17]
+        }}</text>
+        <text
+          class="inputCommon input1"
+          onclick="handleClick(keyBoardNum[18])"
+          >{{ keyBoardNum[18] }}</text
+        >
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+const MinusIcon = '+/-';
+const DelIcon = ' ';
+
+export default {
+  data: {
+    resultShow: '0',
+    isScientific: false,
+    keyBoardNum: ['C', '7', '8', '9', MinusIcon, DelIcon, '4', '5', '6', '+', 'x', '1', '2', '3', '-', '/', '0', '.', '=', '%'],
+    standardKeys: ['C', '7', '8', '9', '+/-', ' ', '4', '5', '6', '+', 'x', '1', '2', '3', '-', '/', '0', '.', '=', '%'],
+    scientificKeys: ['C', 'sin', 'cos', 'tan', 'e', ' ', 'π', 'lg', 'ln', '√', 'x^y', 'x!', '(', ')', '1/x', 'x√y', 'sin-1', 'cos-1', 'tan-1', 'e'],
+    commonColorList: ['#F53333', '#505050', '#505050', '#505050', '#505050', '#FFA626', '#505050', '#505050', '#505050', '#FFA626', '#FFA626', '#505050', '#505050', '#505050', '#FFA626', '#FFA626', '#505050', '#505050', '#FFA626'],
+    clickColorList: [],
+    signColorList: ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF']
+  },
+
+  onInit() {
+    this.clickColorList = this.commonColorList.slice();
+  },
+
+  exchange() {
+    this.isScientific = !this.isScientific;
+    this.keyBoardNum = this.isScientific ? [...this.scientificKeys] : [...this.standardKeys];
+  },
+  handleClick(value) {
+    console.log("点击了:", value);
+
+    if (this.isScientific) {
+      // 科学计算模式处理
+      try {
+        const currentExpression = this.resultShow;
+
+        // 公共处理逻辑
+        const appendOrReplace = (val) => {
+          if (currentExpression === '0' || currentExpression === 'Error') {
+            return val;
+          }
+          return currentExpression + val;
+        };
+
+        switch (value) {
+          case 'AC':
+            this.resultShow = '0';
+            break;
+          case 'D':
+            this.resultShow = this.resultShow.slice(0, -1) || '0';
+            break;
+          case '=':
+            try {
+            let expressionToEval = currentExpression;
+            // 检查是否包含 x√y
+            if (expressionToEval.includes('√')) {
+              expressionToEval = this.handleNthRoot(); // 转换为 Math.pow(y, 1/x)
+            }
+            // 计算表达式
+            this.resultShow = eval(
+              expressionToEval
+                .replace(/x/g, '*') // 将 x 替换为 *
+                .replace(/%/g, '/100') // 将 % 替换为 /100
+                .replace(/\^/g, '**') // 将 ^ 替换为 **
+            ).toString();
+          } catch (e) {
+            this.resultShow = 'Error';
+          }
+            break;
+          case 'sin':
+            this.resultShow = `Math.sin((${currentExpression}) * Math.PI / 180)`;
+            break;
+          case 'cos':
+            this.resultShow = `Math.cos((${currentExpression}) * Math.PI / 180)`;
+            break;
+          case 'tan':
+            this.resultShow = `Math.tan((${currentExpression}) * Math.PI / 180)`;
+            break;
+          case 'π':
+            this.resultShow = appendOrReplace('Math.PI');
+            break;
+          case 'e':
+            this.resultShow = appendOrReplace('Math.E');
+            break;
+          case 'lg':
+            this.resultShow = `Math.log10(${currentExpression})`;
+            break;
+          case 'ln':
+            this.resultShow = `Math.log(${currentExpression})`;
+            break;
+          case '√':
+            this.resultShow = `Math.sqrt(${currentExpression})`;
+            break;
+          case 'x^y':
+            this.resultShow += '**';
+            break;
+          case 'x!':
+            this.resultShow = this.factorial(parseFloat(currentExpression)).toString();
+            break;
+          case '1/x':
+            this.resultShow = `1/(${currentExpression})`;
+            break;
+          case 'sin-1':
+            this.resultShow = `(Math.asin(${currentExpression}) * 180 / Math.PI)`;
+            break;
+          case 'cos-1':
+            this.resultShow = `(Math.acos(${currentExpression}) * 180 / Math.PI)`;
+            break;
+          case 'tan-1':
+            this.resultShow = `(Math.atan(${currentExpression}) * 180 / Math.PI)`;
+            break;
+          case '(':
+            this.resultShow = currentExpression === '0' ? '(' : appendOrReplace('(');
+            break;
+          case ')':
+            this.resultShow = appendOrReplace(')');
+            break;
+          case 'x√y':
+            this.resultShow = appendOrReplace('√'); // 显示为 x√y
+            break;
+          default:
+            if (currentExpression === '0' || currentExpression === 'Error') {
+              this.resultShow = value;
+            } else {
+              this.resultShow += value;
+            }
+        }
+      } catch (e) {
+        this.resultShow = 'Error';
+      }
+    } else {
+      // 标准计算模式处理
+      if (value === 'AC') {
+        this.resultShow = '0';
+      } else if (value === 'D') {
+        this.resultShow = this.resultShow.slice(0, -1) || '0';
+      } else if (value === '=') {
+        try {
+            let expressionToEval = this.resultShow;
+            // 检查是否包含 x√y
+            if (expressionToEval.includes('√')) {
+              expressionToEval = this.handleNthRoot(); // 转换为 Math.pow(y, 1/x)
+            }
+            // 计算表达式
+            this.resultShow = eval(
+              expressionToEval
+                .replace(/x/g, '*') // 将 x 替换为 *
+                .replace(/%/g, '/100') // 将 % 替换为 /100
+                .replace(/\^/g, '**') // 将 ^ 替换为 **
+            ).toString();
+          } catch (e) {
+            this.resultShow = 'Error';
+          }
+      } else {
+        if (this.resultShow === '0') {
+          this.resultShow = value;
+        } else {
+          this.resultShow += value;
+        }
+      }
+    }
+  },
+
+  // 新增处理x√y的方法
+  handleNthRoot() {
+    const expression = this.resultShow;
+    console.log(expression);
+    if (expression.includes('√')) {
+      const [x, y] = expression.split('√');
+      return `Math.pow(${y}, 1/${x})`;
+    }
+    return expression + '√'; // 显示为 x√y 格式
+  },
+  // 新增阶乘计算方法
+  factorial(n) {
+    if (n === 0 || n === 1) return 1;
+    if (n > 170) return Infinity; // 防止数值过大
+    let result = 1;
+    for (let i = 2; i <= n; i++) {
+      result *= i;
+    }
+    return result;
+  }
+};
+</script>
+
+<style>
+@import './rect.css';
+.container {
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resultShow {
+  color: rgb(254, 243, 232);
+  font-size: 40px;
+  text-align: right;
+}
+</style>
