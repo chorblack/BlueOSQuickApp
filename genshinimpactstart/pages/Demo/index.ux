@@ -1,0 +1,163 @@
+<template>
+  <div class="container">
+    <image
+      class="logo {{logoAnimationClass}}"
+      src="/assets/images/logo-modified.png"
+    ></image>
+    <stack class="main-stack">
+      <div class="overlay {{overlayAnimationClass}}" id="overlay"></div>
+      <text class="mybtn" onclick="start" style="display: {{textDisplay}};"
+        >原神启动</text
+      >
+      <image
+        class="image {{imageAnimationClass}}"
+        src="/assets/images/yuanshen.png"
+        id="image"
+        style="display:{{imageDisplay}};"
+      ></image>
+    </stack>
+  </div>
+</template>
+
+<style>
+.container {
+  width: 100%;
+  height: 100%;
+  background-color: aqua;
+}
+
+.main-stack {
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  width: 100%;
+  height: 100%;
+  background-color: white;
+}
+.logo {
+  width: 400px;
+  height: 400px;
+  position: absolute;
+  top: 10px;
+  left: 33px;
+}
+.image {
+  width: 320px;
+  position: fixed;
+  top: 123px;
+  left: 73px;
+}
+
+.mybtn {
+  font-size: 36px;
+  color: #000000;
+  position: absolute;
+  top: 186px;
+  left: 233px;
+  transform: translateX(-50%);
+}
+/* 新增动画样式 */
+.fade-out-logo {
+  animation-name: fadeOut;
+  animation-duration: 500ms;
+  animation-fill-mode: forwards;
+}
+
+.fade-in-overlay {
+  animation-name: fadeInOverlay;
+  animation-duration: 3000ms;
+  animation-fill-mode: forwards;
+}
+
+.fade-in-image {
+  animation-name: fadeInImage;
+  animation-duration: 2000ms;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInImage {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+</style>
+<script>
+import brightness from '@blueos.hardware.display.brightness';
+import media from '@blueos.media.audio.mediaManager';
+let t1;
+export default {
+  data: {
+    // 删除了原来的 opacity 相关字段
+    logoAnimationClass: '',
+    overlayAnimationClass: '',
+    imageAnimationClass: '',
+    textDisplay: 'flex',
+    imageDisplay:'none',
+    // 删除了 timerIds
+  },
+  onInit() {
+    this.audioplayer = media.createAudioPlayer();
+    this.audioplayer.src = "/assets/music/1.mp3";
+    //this.audioplayer.playcount = -1;
+  },
+  onDestroy() {
+    this.audioplayer.stop();
+    this.audioplayer.release();
+    brightness.setKeepScreenOn({
+      keepScreenOn: false,
+    });
+    brightness.setValue({
+      value: 100,
+    });
+    brightness.setMode({
+      mode: 1,
+    })
+    clearTimeout(t1);
+  },
+
+  start() {
+    this.audioplayer.play();
+    // 保持屏幕亮度设置
+    brightness.setKeepScreenOn({
+      keepScreenOn: true,
+    });
+    brightness.setValue({
+      value: 255,
+    });
+    
+    // 启动 logo 淡出动画
+    this.logoAnimationClass = 'fade-out-logo'
+
+    this.textDisplay = 'none'
+    this.overlayAnimationClass = 'fade-in-overlay'
+    //this.logoAnimationClass = ''
+    t1 = setTimeout(() => {
+      this.imageDisplay = 'flex' // 如果使用display控制显隐
+      this.imageAnimationClass = 'fade-in-image'
+    }, 500)
+  },
+}
+</script>
